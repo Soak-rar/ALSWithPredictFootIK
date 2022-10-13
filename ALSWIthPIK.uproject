@@ -1,0 +1,16 @@
+{
+	"FileVersion": 3,
+	"EngineAssociation": "{7ADC2E99-4109-F6D3-4D95-7695D6F5DE80}",
+	"Category": "",
+	"Description": "",
+	"Modules": [
+		{
+			"Name": "ALSWIthPIK",
+			"Type": "Runtime",
+			"LoadingPhase": "Default",
+			"AdditionalDependencies": [
+				"AnimationModifiers"
+			]
+		}
+	]
+}
