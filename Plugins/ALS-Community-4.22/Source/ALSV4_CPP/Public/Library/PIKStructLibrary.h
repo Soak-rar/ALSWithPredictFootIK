@@ -13,16 +13,8 @@
 class UCurveVector;
 class UCurveFloat;
 
-UENUM(BlueprintType)
-enum class EBaseState : uint8
-{
-	None,
-	Walk,
-	Run,
-	Crouch
 
-};
-
+/*动画序列的类别*/
 UENUM(BlueprintType)
 enum class EPredictHipsDirection : uint8
 {
@@ -35,49 +27,31 @@ enum class EPredictHipsDirection : uint8
 	LB
 };
 
+/*预测过程中的信息*/
 USTRUCT(BlueprintType)
-struct FPredictFootIK
+struct FPredictFootValue
 {
 	GENERATED_BODY()
-
-		UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "ALS|Anim Graph - Predict Foot IK Values")
-		FVector Foot_L_Start_Location;
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "ALS|Anim Graph - Predict Foot IK Values")
+	FVector Foot_Start_Location;
 
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "ALS|Anim Graph - Predict Foot IK Values")
-		FVector Foot_R_Start_Location;
+	FVector Foot_End_Location;
 
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "ALS|Anim Graph - Predict Foot IK Values")
-		FVector Foot_L_End_Location;
+	TArray<FVector> Foot_Transition_Points;
 
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "ALS|Anim Graph - Predict Foot IK Values")
-		FVector Foot_R_End_Location;
+	FVector Root_Start_Location;
 
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "ALS|Anim Graph - Predict Foot IK Values")
-		TArray<FVector> Foot_L_Transition_Points;
-
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "ALS|Anim Graph - Predict Foot IK Values")
-		TArray<FVector> Foot_R_Transition_Points;
-
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "ALS|Anim Graph - Predict Foot IK Values")
-		FVector L_Root_Start_Location;
-
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "ALS|Anim Graph - Predict Foot IK Values")
-		FVector R_Root_Start_Location;
-
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "ALS|Anim Graph - Predict Foot IK Values")
-		FVector L_Root_End_Location;
-
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "ALS|Anim Graph - Predict Foot IK Values")
-		FVector R_Root_End_Location;
+	FVector Root_End_Location;
 
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "ALS|Anim Graph - Predict Foot IK AminGraph Value")
-		FRotator L_FootRotator_Target;
-
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "ALS|Anim Graph - Predict Foot IK AminGraph Value")
-		FRotator R_FootRotator_Target;
+	FRotator FootRotator_Target;
 };
 
-
+/*记录实际应用到 动画图的 脚部IK值*/
 USTRUCT(BlueprintType)
 struct FAminGraphApplyValue
 {
@@ -90,25 +64,26 @@ struct FAminGraphApplyValue
 		FRotator R_FootRotator_Offset;
 
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "ALS|Anim Graph - Predict Foot IK Values")
-		float L_FootIK_Offset;
+		FVector L_FootIK_Offset;
 
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "ALS|Anim Graph - Predict Foot IK Values")
-		float R_FootIK_Offset;
+		FVector R_FootIK_Offset;
 
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "ALS|Anim Graph - Predict Foot IK Values")
-		float PelvisOffset = 0.0f;
+		FVector PelvisOffset = FVector::ZeroVector;
 
 	void InitValue()
 	{
 		L_FootRotator_Offset = FRotator::ZeroRotator;
 		R_FootRotator_Offset = FRotator::ZeroRotator;
 
-		L_FootIK_Offset = 0.0f;
-		R_FootIK_Offset = 0.0f;
-		PelvisOffset = 0.0f;
+		L_FootIK_Offset = FVector::ZeroVector;
+		R_FootIK_Offset = FVector::ZeroVector;
+		PelvisOffset = FVector::ZeroVector;
 	}
 };
 
+/*对应ALS大环的 六向状态混合，每个状态节点对应一个FBlendNode*/
 USTRUCT(BlueprintType)
 struct FBlendNode
 {
@@ -153,6 +128,7 @@ struct FBlendNode
 	mutable float BlendRate = 0.0f;
 };
 
+/*每个动画序列对应的曲线资源以及相关信息*/
 USTRUCT(BlueprintType)
 struct FAnimOuterCurves
 {
@@ -185,7 +161,12 @@ struct FAnimOuterCurves
 	/*落脚点脚踝节点与根节点的高度差*/
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Configuration|Animation Sequence Struct|Anim Time Info")
 		float Foot_Root_Landed_Height;
+
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "ALS|Anim Graph - Predict Foot IK Values")
+	float FinalBlendRate = 0.0f;
 };
+
+/*记录 每个动画序列的曲线资源 信息*/
 
 USTRUCT(BlueprintType)
 struct FCurvesResource
@@ -193,21 +174,9 @@ struct FCurvesResource
 	GENERATED_BODY()
 		UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Configuration|Animation Sequence Struct|Anim Time Info")
 		TMap<EPredictHipsDirection, FAnimOuterCurves> Curves;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Configuration|Animation Sequence Struct|Anim Time Info")
-		float Foot_Up_Time;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Configuration|Animation Sequence Struct|Anim Time Info")
-		float AnimationLength;
-
-	/*落脚点脚踝节点与根节点的高度差*/
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Configuration|Animation Sequence Struct|Anim Time Info")
-		float Foot_Root_Landed_Height;
-	 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Configuration|Animation Sequence Struct|Anim Time Info")
-		EBaseState State;
 };
 
+/*记录由ALS混合动画图混合后的 动画参数， 以及 动画同步组 领导者的 动画时长、 抬脚时长*/
 USTRUCT(BlueprintType)
 struct FBlendedCurveValue
 {
@@ -231,11 +200,13 @@ struct FBlendedCurveValue
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "ALS|Anim Graph - Predict Foot IK Value")
 	FVector R_Foot_Rotator;
 
+	/*混合度最高的动画（同步组领导者）抬脚时长*/
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Configuration|Animation Sequence Struct|Anim Time Info")
-	float Foot_Up_Time;
+	float LeaderUpFootTime;
 
+	/*混合度最高的动画（同步组领导者）动画时长*/
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Configuration|Animation Sequence Struct|Anim Time Info")
-	float AnimationLength;
+	float LeaderAnimLength;
 
 	/*落脚点脚踝节点与根节点的高度差*/
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Configuration|Animation Sequence Struct|Anim Time Info")
@@ -249,37 +220,66 @@ struct FBlendedCurveValue
 		R_Ball_Vector = FVector::ZeroVector;
 		L_Foot_Rotator = FVector::ZeroVector;
 		R_Foot_Rotator = FVector::ZeroVector;
+		LeaderUpFootTime = 0.0f;
+		LeaderAnimLength = 0.0f;
+		Foot_Root_Landed_Height = 15.5f;
 	}
 };
 
+/*一些配置固定参数*/
 USTRUCT(BlueprintType)
 struct FPredictIKConfig
 {
 	GENERATED_BODY()
 
-	UPROPERTY(VisibleDefaultsOnly, Category = "ALS|Anim Graph - Predict Foot IK Config")
+	UPROPERTY(EditAnywhere, Category = "ALS|Anim Graph - Predict Foot IK Config")
 	//FVector Foot_Box_Trace_Half_Size = FVector(5.0f, 8.0f, 14.0f);
 	FVector Foot_Box_Trace_Half_Size = FVector(13.0f, 15.0f, 5.0f);
 
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "ALS|Anim Graph - Predict Foot IK Config")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ALS|Anim Graph - Predict Foot IK Config")
 		float Vertical_Trace_Height = 60.0f;
 
-
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "ALS|Anim Graph - Predict Foot IK Config")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ALS|Anim Graph - Predict Foot IK Config")
 		float Transition_Height_Threshold = 60.0f;
 
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "ALS|Anim Graph - Predict Foot IK Config")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ALS|Anim Graph - Predict Foot IK Config")
 		int32 Transition_SubSection_Length = 16;
 
 	float FootHeightModify = 16.0f;
 
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "ALS|Anim Graph - Predict Foot IK Config")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ALS|Anim Graph - Predict Foot IK Config")
 	float Character_Height = 180.0f;
 
-	UPROPERTY(VisibleDefaultsOnly, Category = "ALS|Anim Graph - Predict Foot IK Config")
+	UPROPERTY(EditAnywhere, Category = "ALS|Anim Graph - Predict Foot IK Config")
 	FVector EnableTrace_Height = FVector(0, 0, 99999.0f);
 
 	/*脚部Ik与预测IK之间的过渡时间*/
-	UPROPERTY(VisibleDefaultsOnly, Category = "ALS|Anim Graph - Predict Foot IK Config")
-		float MaxTransTime = 0.4f;
+	UPROPERTY(EditAnywhere, Category = "ALS|Anim Graph - Predict Foot IK Config")
+		float MaxTransTime = 0.2f;
+};
+
+/*混合后领导者 动画 的单独动画曲线信息（由混合值计算而来）*/
+USTRUCT(BlueprintType)
+struct FLeaderAnimInfo
+{
+	GENERATED_BODY()
+		UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "ALS|Anim Graph - Predict Foot IK Value")
+		float LFootUpTime;
+
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "ALS|Anim Graph - Predict Foot IK Value")
+		float RFootUpTime;
+
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "ALS|Anim Graph - Predict Foot IK Value")
+		float CurrentAnimTime;
+
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "ALS|Anim Graph - Predict Foot IK Value")
+		EPredictHipsDirection LeaderAnimType;
+
+	void InitValue()
+	{
+		LFootUpTime = 0.0f;
+		RFootUpTime = 0.0f;
+		CurrentAnimTime = 0.0f;
+		LeaderAnimType = EPredictHipsDirection::None;
+	}
 };

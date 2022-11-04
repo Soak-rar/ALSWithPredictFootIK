@@ -4,29 +4,20 @@
 
 #include "CoreMinimal.h"
 #include "AnimationModifier.h"
+#include "CurveObject.h"
 #include "Curves/CurveVector.h"
 #include "CurveVectorModifier.generated.h"
 
 /**
  * 
  */
-UCLASS()
+UCLASS(Blueprintable, Experimental, config = Editor, defaultconfig)
 class ALSWITHPIK_API UCurveVectorModifier : public UAnimationModifier
 {
 	GENERATED_BODY()
 
-		friend class FAnimationModifierDetailCustomization;
 public:
-	UFUNCTION(BlueprintCallable, Category = "Curve Edit")
-		void AddKeyFrameForCurveFloat(UCurveFloat* Curve, float time, float value);
 
-	UFUNCTION(BlueprintCallable, Category = "Curve Edit")
-		void AddKeyFrameForCurveVector(UCurveVector* Curve, float time, FVector value);
-
-	UFUNCTION(BlueprintCallable, Category = "Curve Edit")
-		void AddKeyFrameForCurveRotator(UCurveVector* Curve, float time, FRotator value);
-
-	UFUNCTION(BlueprintCallable, Category = "Curve Edit")
-		void ClearKeyCurveVector(UCurveVector* Curve);
+	virtual void OnApply_Implementation(UAnimSequence* AnimationSequence);
 	
 };

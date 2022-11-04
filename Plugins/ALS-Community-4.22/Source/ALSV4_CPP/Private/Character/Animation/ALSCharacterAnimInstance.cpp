@@ -287,6 +287,7 @@ void UALSCharacterAnimInstance::UpdateLayerValues()
 
 void UALSCharacterAnimInstance::UpdateFootIK(float DeltaSeconds)
 {
+
 	FVector FootOffsetLTarget = FVector::ZeroVector;
 	FVector FootOffsetRTarget = FVector::ZeroVector;
 
@@ -314,6 +315,9 @@ void UALSCharacterAnimInstance::UpdateFootIK(float DeltaSeconds)
 		               FootOffsetRTarget,
 		               FootIKValues.FootOffset_R_Location, FootIKValues.FootOffset_R_Rotation);
 		SetPelvisIKOffset(DeltaSeconds, FootOffsetLTarget, FootOffsetRTarget);
+		/*改*/
+		FootLTarget = FootOffsetLTarget;
+		FootRTarget = FootOffsetRTarget;
 	}
 }
 
@@ -392,8 +396,7 @@ void UALSCharacterAnimInstance::SetFootLockOffsets(float DeltaSeconds, FVector& 
 	LocalRot = Delta;
 }
 
-void UALSCharacterAnimInstance::SetPelvisIKOffset(float DeltaSeconds, FVector FootOffsetLTarget,
-                                                  FVector FootOffsetRTarget)
+void UALSCharacterAnimInstance::SetPelvisIKOffset(float DeltaSeconds, FVector FootOffsetLTarget, FVector FootOffsetRTarget)
 {
 	// Calculate the Pelvis Alpha by finding the average Foot IK weight. If the alpha is 0, clear the offset.
 	FootIKValues.PelvisAlpha =
@@ -404,6 +407,9 @@ void UALSCharacterAnimInstance::SetPelvisIKOffset(float DeltaSeconds, FVector Fo
 		// Step 1: Set the new Pelvis Target to be the lowest Foot Offset
 		const FVector PelvisTarget = FootOffsetLTarget.Z < FootOffsetRTarget.Z ? FootOffsetLTarget : FootOffsetRTarget;
 
+		/*改*/
+		PredictPelvisTarget = PelvisTarget;
+	
 		// Step 2: Interp the Current Pelvis Offset to the new target value.
 		//Interpolate at different speeds based on whether the new target is above or below the current one.
 		const float InterpSpeed = PelvisTarget.Z > FootIKValues.PelvisOffset.Z ? 10.0f : 15.0f;
@@ -461,6 +467,11 @@ void UALSCharacterAnimInstance::SetFootOffsets(float DeltaSeconds, FName EnableF
 	                                                  TraceStart,
 	                                                  TraceEnd,
 	                                                  ECC_Visibility, Params);
+
+	/*改  ↓ */
+
+
+	/*改  ↑*/
 
 	if (ALSDebugComponent && ALSDebugComponent->GetShowTraces())
 	{

@@ -106,7 +106,7 @@ public:
 	bool ShouldMoveCheck() const;
 
 	/** Only perform a Rotate In Place Check if the character is Aiming or in First Person. */
-	UFUNCTION(BlueprintCallable, Category = "ALS|Grounded")
+	UFUNCTION(BlueprintCallable, Category = "AGLS|Grounded")
 	bool CanRotateInPlace() const;
 
 	/**
@@ -185,6 +185,7 @@ private:
 
 	FVector CalculateRelativeAccelerationAmount() const;
 
+	
 	float CalculateStrideBlend() const;
 
 	float CalculateWalkRunBlend() const;
@@ -351,4 +352,10 @@ private:
 
 	UPROPERTY()
 	UALSDebugComponent* ALSDebugComponent = nullptr;
+
+protected:
+	FVector FootLTarget = FVector::ZeroVector;
+	FVector FootRTarget = FVector::ZeroVector;
+
+	FVector PredictPelvisTarget = FVector::ZeroVector;
 };

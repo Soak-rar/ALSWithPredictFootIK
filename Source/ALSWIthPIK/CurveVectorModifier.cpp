@@ -3,42 +3,10 @@
 
 #include "CurveVectorModifier.h"
 
-void UCurveVectorModifier::AddKeyFrameForCurveFloat(UCurveFloat* Curve, float time, float value)
+void UCurveVectorModifier::OnApply_Implementation(UAnimSequence* AnimationSequence)
 {
-	if (Curve)
-	{
-		Curve->FloatCurve.AddKey(time, value);
-	}
-}
+	Super::OnApply_Implementation(AnimationSequence);
 
-void UCurveVectorModifier::AddKeyFrameForCurveVector(UCurveVector* Curve, float time, FVector value)
-{
-	if (Curve)
-	{
-		Curve->FloatCurves[0].AddKey(time, value.X);
-		Curve->FloatCurves[1].AddKey(time, value.Y);
-		Curve->FloatCurves[2].AddKey(time, value.Z);
-	}
 
-}
 
-void UCurveVectorModifier::AddKeyFrameForCurveRotator(UCurveVector* Curve, float time, FRotator value)
-{
-	if (Curve)
-	{
-
-		Curve->FloatCurves[0].AddKey(time, value.Pitch);
-		Curve->FloatCurves[1].AddKey(time, value.Yaw);
-		Curve->FloatCurves[2].AddKey(time, value.Roll);
-	}
-}
-
-void UCurveVectorModifier::ClearKeyCurveVector(UCurveVector* Curve)
-{
-	if (Curve)
-	{
-		Curve->FloatCurves[0].Reset();
-		Curve->FloatCurves[1].Reset();
-		Curve->FloatCurves[2].Reset();
-	}
 }
